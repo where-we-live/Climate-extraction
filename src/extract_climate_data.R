@@ -23,22 +23,19 @@ extract_climate_data <- function(cityname, var_type) {
     label = c("Bovill", "Kendrick", "Deary", "Troy")
   )
   
-  coordinates <- subset(df_coordinates, label == cityname)
-  coordinates <- coordinates[,c(1:2)]
+  # coordinates <- subset(df_coordinates, label == cityname)
+  # coordinates <- coordinates[,c(1:2)]
   
-  
-  
-  
-  opendap_url <- paste("http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_", var_type, "_1979_CurrentYear_CONUS.nc", sep="")
+  opendap_url <- paste("http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_", var_type, "_1979_CurrentYear_CONUS.nc#fillmismatch", sep="")
   
   # Initialize an empty data frame to store data for all coordinates
   all_climate_data <- data.frame()
   
   # Loop over each set of coordinates
-  for (i in 1:nrow(coordinates)) {
-    target_lon <- coordinates$lon[i]
-    target_lat <- coordinates$lat[i]
-    coord_label <- coordinates$label[i]  # Custom label for each point
+  for (i in 1:nrow(df_coordinates)) {
+    target_lon <- df_coordinates$lon[i]
+    target_lat <- df_coordinates$lat[i]
+    coord_label <- df_coordinates$label[i]  # Custom label for each point
     
     # Open the NetCDF file
     nc_data <- nc_open(opendap_url)
@@ -91,6 +88,7 @@ extract_climate_data <- function(cityname, var_type) {
 }
 
 
+extracted_data <- extract_climate_data("Bovill", "tmmx")
 
 # Example usage
 opendap_url_temp <- "http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_tmmx_1979_CurrentYear_CONUS.nc"
