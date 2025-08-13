@@ -1,4 +1,4 @@
-extract_climaate_data_county_aggretation <- function() {
+extract_climate_data_county_aggretation <- function() {
   
   
   library(sf)

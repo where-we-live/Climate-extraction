@@ -1,27 +1,30 @@
-#extract_climate_data.R
-#who is the author
-#date
-#this is function which extracts climate data from the UI THREDDS climate server
-#the inputs to the fuction are as follows: 
-#coordinate - these are the point coordinates for the location to extract
+#Title: extract_climate_data.R
+#Author: Erich Seamon
+#Date: 08.12.2025
+#Description: this is function which extracts climate data from the UI THREDDS climate server
+#the inputs to the function are as follows: 
+#
+#df_coordinates - these are the point coordinates for the location to extract, in a data frame,
+#with lat, lon, and a label.
 #var_type - is the climate variable, which includes:
 
+#--------------------------------
 
-
-# Load necessary libraries
-library(ncdf4)
-library(dplyr)
-library(lubridate)
-
-# Function to extract climate data for specified coordinates
 extract_climate_point_data <- function(var_type) {
   
+  # Load necessary libraries
+  library(ncdf4)
+  library(dplyr)
+  library(lubridate)
+  
+  df_coordinates <- read.csv("./data/coordinates/city_coordinates.csv")
+  
   # Example coordinates
-  df_coordinates <- data.frame(
-    lon = c(-116.394, -116.647, -116.556, -116.77),
-    lat = c(46.859, 46.614, 46.799, 46.737),
-    label = c("Bovill", "Kendrick", "Deary", "Troy")
-  )
+  # df_coordinates <- data.frame(
+  #   lon = c(-116.394, -116.647, -116.556, -116.77),
+  #   lat = c(46.859, 46.614, 46.799, 46.737),
+  #   label = c("Bovill", "Kendrick", "Deary", "Troy")
+  # )
   
   # coordinates <- subset(df_coordinates, label == cityname)
   # coordinates <- coordinates[,c(1:2)]

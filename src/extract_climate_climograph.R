@@ -20,7 +20,7 @@ extract_climate_climograph <- function(var_type) {
     
     climate_summary <- extracted_data %>%
       group_by(coord, month) %>%
-      summarise(climate_variable = mean(extracted_data[,2], na.rm = TRUE), .groups = "drop")
+      dplyr::summarise(climate_variable = mean(daily_maximum_temperature, na.rm = TRUE), .groups = "drop")
     
     # Create the climograph with all coordinates in one graph
     plot <- ggplot(climate_summary, aes(x = month, y = climate_variable, color = coord, group = coord)) +
@@ -43,7 +43,7 @@ extract_climate_climograph <- function(var_type) {
     
     climate_summary <- extracted_data %>%
       group_by(coord, month) %>%
-      summarise(climate_variable = mean(extracted_data[,2], na.rm = TRUE), .groups = "drop")
+      summarise(climate_variable = mean(daily_minimum_temperature, na.rm = TRUE), .groups = "drop")
     
     # Create the climograph with all coordinates in one graph
     plot <- ggplot(climate_summary, aes(x = month, y = climate_variable, color = coord, group = coord)) +
