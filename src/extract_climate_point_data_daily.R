@@ -10,7 +10,7 @@
 
 #--------------------------------
 
-extract_climate_point_data <- function(var_type) {
+extract_climate_point_data_daily <- function(var_type) {
   
   # Load necessary libraries
   library(ncdf4)
@@ -76,7 +76,7 @@ extract_climate_point_data <- function(var_type) {
     }
     
     # Rename the value column based on the var_name
-    colnames(climate_df)[which(names(climate_df) == "value")] <- var_name
+    colnames(climate_df)[which(names(climate_df) == "value")] <- var_type
     
     # Add day, month, and year columns
     climate_df <- climate_df %>%
@@ -87,7 +87,11 @@ extract_climate_point_data <- function(var_type) {
   }
   
   # Return the extracted climate data
-  return(all_climate_data)
+  #return(all_climate_data)
+  
+  
+  write.csv(all_climate_data, file= paste("./data/point_data/", var_type, ".csv", sep=""), row.names = FALSE)
+            
 }
 
 

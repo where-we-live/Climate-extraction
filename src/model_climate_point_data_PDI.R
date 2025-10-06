@@ -4,12 +4,10 @@ library(ncdf4)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
-
 library(patchwork)
 library(networkD3)
 library(dplyr)
 library(lme4)
-
 library(lmerTest)
 library(tidyverse)
 library(rockchalk)
@@ -53,11 +51,9 @@ library(pdp)
 library(dunn.test)
 library(RColorBrewer)
 library(scales)
-
 library(ggpubr)
 library(ggExtra)
 library(gridExtra)
-
 library(gtsummary)
 library(flextable)
 library(officer)
@@ -65,10 +61,9 @@ library(officer)
 library(stats)
 library(psych)
 
+#load survey data (simulated)
 
 SS1 <- read.csv("./data/survey/SS1.csv")
-
-
 F4<-SS1%>%dplyr::select(Education,Occupation,Duration,age)
 F5<-SS1%>%dplyr::select(que_6,que_15,que_24,Location,Point)
 
@@ -83,6 +78,8 @@ print(bartlett_result)
 set.seed(123)
 Data1<-as.data.frame.matrix(F4)
 
+#PCA
+
 
 pca_result <- prcomp(Data1, center = TRUE, scale = TRUE)
 summary(pca_result)
@@ -94,8 +91,6 @@ eigenvalues
 
 pca_result <- principal(Data1, nfactors = 2, rotate = "varimax")
 pca_result
-
-
 
 fit.varimax<-principal(Data1,nfactors=2,rotate="varimax")
 fit.varimax
@@ -122,7 +117,7 @@ Tipo3c<-dist(standardized_data,method="euclidean")
 hclust(Tipo3c,method="ward.D")
 tipo3C<-hclust(Tipo3c,method="ward.D")
 
-windows()
+#windows()
 plot(tipo3C)
 
 windows()
@@ -164,8 +159,13 @@ View(F6)
 ######################################################################################################################
 # CALCULATING THE SLOPE OF EACH PARTICIPANT 
 
+bovill_data <- read.csv("./data/point_data/tmmx.csv")
+bovill_data <- bovill_data %>%
+  filter(coord == "Deary")
+summary(bovill_data)
+
 F6_Bovill<-F6 %>%
-  filter(Location == "Bovill")
+  filter(Location == "Deary")
 summary(F6_Bovill)
 
 summary(F6_Bovill)
@@ -185,7 +185,7 @@ F6_Bovill <- F6_Bovill %>%
       if (sum(bovill_data$year >= start_year & bovill_data$year <= end_year) >= 2) {
         yearly_avg <- dplyr::summarize(
           dplyr::group_by(bovill_data, year),
-          mean_temp = mean(value, na.rm = TRUE)
+          mean_temp = mean(tmmx, na.rm = TRUE)
         ) %>%
           filter(year >= start_year, year <= end_year)
         
@@ -218,7 +218,7 @@ t1<-ggplot(F6_Bovill, aes(x = que_6, y = Slope)) +
     y = "Slope of Temperature Trend (°C/year)"
   ) +
   theme_classic()
-windows()
+#windows()
 t1
 
 
@@ -234,7 +234,7 @@ t2<-ggplot(F6_Bovill, aes(x = que_6, y = cluster)) +
     y = "cluster"
   ) +
   theme_classic()
-windows()
+#windows()
 t2
 
 t3<-ggplot(F6_Bovill, aes(x = factor(cluster), y = que_6)) +
@@ -242,7 +242,7 @@ t3<-ggplot(F6_Bovill, aes(x = factor(cluster), y = que_6)) +
   labs(x = "Cluster", y = "Response to que_6", title = "Distribution of que_6 by Cluster") +
   theme_classic()
 
-windows()
+#windows()
 t3
 
 
@@ -251,7 +251,7 @@ t4<-ggplot(F6_Bovill, aes(x = factor(cluster), y = que_6)) +
   labs(x = "Cluster", y = "Response to que_6", title = "Violin Plot of que_6 by Cluster") +
   theme_minimal()
 
-windows()
+#windows()
 t4
 
 
@@ -260,5 +260,27 @@ t5<-ggplot(F6_Bovill, aes(x = factor(que_6), fill = factor(cluster))) +
   labs(x = "Response to que_6", y = "Count", fill = "Cluster", title = "Responses to que_6 by Cluster") +
   theme_light()
 
-windows()
+#windows()
 t5
+
+
+
+#------
+
+
+# Suppose you have:
+# survey_df$perception   # 1–7 Likert
+# survey_df$sens_slope   # Sen’s slope for that location
+
+# Min-max scale both to [0,1]
+F6_Bovill$que_6_scaled <- scales::rescale(F6_Bovill$que_6, to = c(0,1))
+F6_Bovill$Slope_scaled       <- scales::rescale(F6_Bovill$Slope, to = c(0,1))
+F6_Bovill$delta <- F6_Bovill$que_6_scaled - F6_Bovill$Slope_scaled
+
+# Alternatively, standardize to mean 0, sd 1
+F6_Bovill$que_6_scaled_alt <- scale(F6_Bovill$que_6)
+F6_Bovill$Slope_scaled_alt       <- scale(F6_Bovill$Slope)
+F6_Bovill$delta_alt <- F6_Bovill$que_6_scaled_alt - F6_Bovill$Slope_scaled_alt
+
+
+
