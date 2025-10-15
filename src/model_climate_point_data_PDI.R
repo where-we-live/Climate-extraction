@@ -120,7 +120,7 @@ tipo3C<-hclust(Tipo3c,method="ward.D")
 #windows()
 plot(tipo3C)
 
-windows()
+#windows()
 # Plot and save the dendrogram
 png("Ddendrogram_plot.png", width = 800, height = 600)  # Open a PNG device
 plot(tipo3C, main = "Dendrogram", xlab = "Observations", sub = "", ylab = "Height")  # Plot the dendrogram
@@ -133,7 +133,7 @@ rect.hclust(tipo3C, k = 4, border = "red")  # Add rectangles to the plot for 3 c
 kc<-kmeans(standardized_data,4)
 kc
 kc$centers
-write.csv(kc$centers,file="clusterpca4.csv")
+#write.csv(kc$centers,file="clusterpca4.csv")
 
 
 
@@ -147,7 +147,7 @@ View(dataset)
 cluster_summary <- dataset %>%group_by(cluster) %>%summarise(Mean_Variable1 = mean(age),SD_Variable1 = sd(age),Mean_Variable2 = mean(Duration),SD_Variable2 = sd(Duration),Mean_Variable3= mean(Occupation),SD_Variable3 = sd(Occupation),Mean_Variable4 = mean(Education),SD_Variable4 = sd(Education),Count = n())
 cluster_summary
 print(cluster_summary)
-write.csv(cluster_summary,file="clustersummary.csv")
+#write.csv(cluster_summary,file="clustersummary.csv")
 
 
 F6<-cbind(dataset,F5)
