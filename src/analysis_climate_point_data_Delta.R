@@ -1,4 +1,6 @@
 analysis_climate_point_data_Delta <- function(location, clim) {
+  
+library(ggplot2)
 
 survey_data <- read.csv(paste("./data/delta/", "survey_delta_", clim, "_", location, ".csv", sep=""))
 
