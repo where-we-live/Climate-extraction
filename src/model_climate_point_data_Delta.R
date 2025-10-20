@@ -1,4 +1,7 @@
 
+model_climate_point_data_Delta <- function(location, clim) {
+  
+  
 # Load necessary libraries
 library(ncdf4)
 library(dplyr)
@@ -74,13 +77,13 @@ F6<-cbind(Data1,F5)
 ######################################################################################################################
 # CALCULATING THE SLOPE OF EACH PARTICIPANT 
 
-climate_data <- read.csv("./data/point_data/tmmx.csv")
+climate_data <- read.csv(paste("./data/point_data/", clim, ".csv", sep=""))
 climate_data <- climate_data %>%
-  filter(coord == "Deary")
+  filter(coord == location)
 summary(climate_data)
 
 survey_data<-F6 %>%
-  filter(Location == "Deary")
+  filter(Location == location)
 summary(survey_data)
 
 survey_data <- survey_data %>%
@@ -119,16 +122,54 @@ survey_data <- survey_data %>%
 # survey_df$perception   # 1–7 Likert
 # survey_df$sens_slope   # Sen’s slope for that location
 
+survey_data$Slope_scaled  <- scales::rescale(survey_data$Slope, to = c(0,1))
+survey_data$Slope_scaled_alt  <- scale(survey_data$Slope)
+
+
+
+#calculate slope and delta for all questions
+
+for (i in colnames(survey_data[, 5:7])) {
+  message(i)
+  # scale the actual column vector, not a string
+  survey_data[[paste0(i, "_scaled")]] <- scales::rescale(survey_data[[i]], to = c(0, 1))
+  survey_data[[paste0(i, "_delta")]] <- survey_data[[paste0(i, "_scaled")]] - survey_data$Slope_scaled
+}
+
+
 # Min-max scale both to [0,1]
 survey_data$que_6_scaled <- scales::rescale(survey_data$que_6, to = c(0,1))
-survey_data$Slope_scaled       <- scales::rescale(survey_data$Slope, to = c(0,1))
-survey_data$delta <- survey_data$que_6_scaled - survey_data$Slope_scaled
+survey_data$que_6_delta <- survey_data$que_6_scaled - survey_data$Slope_scaled
 
 # Alternatively, standardize to mean 0, sd 1
 survey_data$que_6_scaled_alt <- scale(survey_data$que_6)
-survey_data$Slope_scaled_alt       <- scale(survey_data$Slope)
-survey_data$delta_alt <- survey_data$que_6_scaled_alt - survey_data$Slope_scaled_alt
+survey_data$que_6_delta_alt <- survey_data$que_6_scaled_alt - survey_data$Slope_scaled_alt
 
+#que_24
+
+# Min-max scale both to [0,1]
+survey_data$que_24_scaled <- scales::rescale(survey_data$que_24, to = c(0,1))
+survey_data$que_24_delta <- survey_data$que_24_scaled - survey_data$Slope_scaled
+
+# Alternatively, standardize to mean 0, sd 1
+survey_data$que_24_scaled_alt <- scale(survey_data$que_24)
+survey_data$que_24_delta_alt <- survey_data$que_24_scaled_alt - survey_data$Slope_scaled_alt
+
+
+
+#que_15
+
+# Min-max scale both to [0,1]
+survey_data$que_15_scaled <- scales::rescale(survey_data$que_15, to = c(0,1))
+survey_data$que_15_delta <- survey_data$que_15_scaled - survey_data$Slope_scaled
+
+# Alternatively, standardize to mean 0, sd 1
+survey_data$que_15_scaled_alt <- scale(survey_data$que_15)
+survey_data$que_15_delta_alt <- survey_data$que_15_scaled_alt - survey_data$Slope_scaled_alt
+
+write.csv(survey_data, file= paste("./data/delta/", "survey_delta_", clim, "_", location, ".csv", sep=""), row.names=FALSE)
+
+}
 
 #########################################################################################################
 #Plotting the graphs 
@@ -146,16 +187,32 @@ t1<-ggplot(survey_data, aes(x = que_6, y = Slope)) +
 t1
 
 
-ggplot(survey_data, aes(x = que_6, y = delta)) +
+ggplot(survey_data, aes(x = que_24, y = que_24_delta)) +
   geom_point(alpha = 0.7, position = position_jitter(width = 0.1, height = 0)) +
-  scale_x_continuous(breaks = sort(unique(survey_data$que_6))) +
-  labs(x = "que_6", y = "delta") +
+  scale_x_continuous(breaks = sort(unique(survey_data$que_24))) +
+  labs(x = "que_24", y = "delta") +
   theme_minimal()
 
 #duration vs delta
-ggplot(survey_data, aes(x = Duration, y = delta)) +
+ggplot(survey_data, aes(x = Duration, y = que_24_delta)) +
   geom_point(alpha = 0.7, position = position_jitter(width = 0.1, height = 0)) +
   scale_x_continuous(breaks = sort(unique(survey_data$Duration))) +
   labs(x = "que_6", y = "delta") +
+  theme_minimal()
+
+
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+# pick the two columns you want on the x-axis
+cols <- c("que_6", "que_24")   # change to any two, e.g., c("que_6","que_15")
+
+survey_data %>%
+  pivot_longer(all_of(cols), names_to = "question", values_to = "xval") %>%
+  ggplot(aes(x = xval, y = delta, color = question)) +
+  geom_point(alpha = 0.7, position = position_jitter(width = 0.12, height = 0)) +
+  scale_x_continuous(breaks = sort(unique(unlist(survey_data[cols])))) +
+  labs(x = "Response value", y = "delta", color = "Column") +
   theme_minimal()
 
