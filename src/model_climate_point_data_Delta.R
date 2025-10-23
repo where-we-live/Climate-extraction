@@ -1,88 +1,22 @@
-
 model_climate_point_data_Delta <- function(location, clim) {
   
+library(dplyr)    
+library(tidyr)    
+library(ggplot2)  
+library(scales)   
   
-  
-  library(dplyr)    # select, filter, rowwise, mutate, summarize, group_by, ungroup
-  library(tidyr)    # pivot_longer
-  library(ggplot2)  # plots, geoms, themes, ggsave
-  library(scales)   # rescale()
-  
-#   
-#   
-# # Load necessary libraries
-# library(ncdf4)
-# library(dplyr)
-# library(lubridate)
-# library(ggplot2)
-# library(patchwork)
-# library(networkD3)
-# library(dplyr)
-# library(lme4)
-# library(lmerTest)
-# library(tidyverse)
-# library(rockchalk)
-# library(dplyr)
-# library(gtsummary)
-# library(car)
-# library(ordinal)
-# library(finalfit)
-# library(dplyr)
-# library(mice)
-# library(ggplot2)
-# library(plm)
-# library(flextable)
-# library(gt)
-# library(kableExtra)
-# library(pglm)
-# library(broom.mixed)
-# library(huxtable)
-# library(cluster)
-# library(NbClust)
-# library(factoextra)
-# #library(lcmm)
-# library(flexmix)
-# library(mclust)
-# library(poLCA)
-# #library(lavaan)
-# library(msm)
-# library(stats19)
-# #library(agricolae)
-# library(ggplot2)
-# library(dplyr)
-# library(RColorBrewer)
-# library(vcd)
-# library(networkD3)
-# library(poLCA)
-# library(psych)
-# library(nnet)
-# library(randomForest)
-# library(xfun)
-# library(pdp)
-# library(dunn.test)
-# library(RColorBrewer)
-# library(scales)
-# library(ggpubr)
-# library(ggExtra)
-# library(gridExtra)
-# library(gtsummary)
-# library(flextable)
-# library(officer)
-# # Load library
-# library(stats)
-# library(psych)
-
 set.seed(123)
 
 #load survey data (simulated)
 
 SS1 <- read.csv("./data/survey/SS1.csv")
+SS1$Location <- as.factor(SS1$Location)
+levels(SS1$Location)[levels(SS1$Location) == "Elk River"] <- "Kendrick"
 F4<-SS1%>%dplyr::select(Education,Occupation,Duration,age)
 F5<-SS1%>%dplyr::select(que_6,que_15,que_24,Location,Point)
 Data1<-as.data.frame.matrix(F4)
 F6<-cbind(Data1,F5)
 
-######################################################################################################################
 # CALCULATING THE SLOPE OF EACH PARTICIPANT 
 
 climate_data <- read.csv(paste("./data/point_data/", clim, ".csv", sep=""))
@@ -124,16 +58,12 @@ survey_data <- survey_data %>%
   ungroup()
 
 #------
-
-
 # Suppose you have:
 # survey_df$perception   # 1–7 Likert
 # survey_df$sens_slope   # Sen’s slope for that location
 
 survey_data$Slope_scaled  <- scales::rescale(survey_data$Slope, to = c(0,1))
 survey_data$Slope_scaled_alt  <- scale(survey_data$Slope)
-
-
 
 #calculate slope and delta for all questions
 
@@ -146,45 +76,11 @@ for (i in colnames(survey_data[, 5:7])) {
   survey_data[[paste0(i, "_scaled_alt")]] <- as.numeric(scale(survey_data[[i]]))
   survey_data[[paste0(i, "_delta_alt")]]  <- survey_data[[paste0(i, "_scaled_alt")]] - survey_data$Slope_scaled_alt
 
-
-# 
-# # Min-max scale both to [0,1]
-# survey_data$que_6_scaled <- scales::rescale(survey_data$que_6, to = c(0,1))
-# survey_data$que_6_delta <- survey_data$que_6_scaled - survey_data$Slope_scaled
-# 
-# # Alternatively, standardize to mean 0, sd 1
-# survey_data$que_6_scaled_alt <- scale(survey_data$que_6)
-# survey_data$que_6_delta_alt <- survey_data$que_6_scaled_alt - survey_data$Slope_scaled_alt
-# 
-# #que_24
-# 
-# # Min-max scale both to [0,1]
-# survey_data$que_24_scaled <- scales::rescale(survey_data$que_24, to = c(0,1))
-# survey_data$que_24_delta <- survey_data$que_24_scaled - survey_data$Slope_scaled
-# 
-# # Alternatively, standardize to mean 0, sd 1
-# survey_data$que_24_scaled_alt <- scale(survey_data$que_24)
-# survey_data$que_24_delta_alt <- survey_data$que_24_scaled_alt - survey_data$Slope_scaled_alt
-# 
-# 
-# 
-# #que_15
-# 
-# # Min-max scale both to [0,1]
-# survey_data$que_15_scaled <- scales::rescale(survey_data$que_15, to = c(0,1))
-# survey_data$que_15_delta <- survey_data$que_15_scaled - survey_data$Slope_scaled
-# 
-# # Alternatively, standardize to mean 0, sd 1
-# survey_data$que_15_scaled_alt <- scale(survey_data$que_15)
-# survey_data$que_15_delta_alt <- survey_data$que_15_scaled_alt - survey_data$Slope_scaled_alt
-
 write.csv(survey_data, file= paste("./data/delta/", "survey_delta_", clim, "_", location, ".csv", sep=""), row.names=FALSE)
 
 }
 
-#########################################################################################################
 #Plotting the graphs 
-
 
 for (i in colnames(survey_data[, 5:7])) {
 
@@ -197,7 +93,7 @@ t1<-ggplot(survey_data, aes(x=as.numeric(.data[[i]]), y = Slope)) +
     y = paste("Slope of ", clim, " Trend", sep="")
   ) +
   theme_classic()
-ggplot2::ggsave(paste("./plots/", i, "_slopetrend.png", sep=""), t1, width = 7, height = 5, dpi = 300, device = ragg::agg_png)
+ggplot2::ggsave(paste("./plots/", i, "_", location, "_slopetrend.png", sep=""), t1, width = 7, height = 5, dpi = 300, device = ragg::agg_png)
 }
 
 
@@ -220,22 +116,12 @@ for (i in names(survey_data)[5:7]) {
     theme_minimal()
 
   ggplot2::ggsave(
-    filename = paste0("./plots/", i, "_deltatrend.png"),
+    filename = paste0("./plots/", i, "_", location, "_deltatrend.png"),
     plot = t1,
     width = 7, height = 5, dpi = 300,
     device = ragg::agg_png
   )
 }
-
-
-# ggplot(survey_data, aes(x = que_24, y = que_24_delta)) +
-#   geom_point(alpha = 0.7, position = position_jitter(width = 0.1, height = 0)) +
-#   scale_x_continuous(breaks = sort(unique(survey_data$que_24))) +
-#   labs(x = "que_24", y = "delta") +
-#   theme_minimal()
-#   ggplot2::ggsave(paste("./plots/", i, "_slopetrend.png", sep=""), t1, width = 7, height = 5, dpi = 300, device = ragg::agg_png)
-#   
-
 
 for (i in names(survey_data)[5:7]) {
   ycol <- paste0(i, "_delta")
@@ -258,36 +144,12 @@ for (i in names(survey_data)[5:7]) {
     theme_minimal()
   
   ggplot2::ggsave(
-    filename = paste0("./plots/Duration_vs_", i, "_delta.png"),
+    filename = paste0("./plots/Duration_vs_", i, "_", location, "_delta.png"),
     plot = t1,
     width = 7, height = 5, dpi = 300,
     device = ragg::agg_png
   )
 }
 
-
-
-
-#duration vs delta
-ggplot(survey_data, aes(x = Duration, y = que_24_delta)) +
-  geom_point(alpha = 0.7, position = position_jitter(width = 0.1, height = 0)) +
-  scale_x_continuous(breaks = sort(unique(survey_data$Duration))) +
-  labs(x = "Duration", y = "delta") +
-  theme_minimal()
-
-
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-
-# pick the two columns you want on the x-axis
-cols <- c("que_6", "que_24")   # change to any two, e.g., c("que_6","que_15")
-
-survey_data %>%
-  pivot_longer(all_of(cols), names_to = "question", values_to = "xval") %>%
-  ggplot(aes(x = xval, y = delta, color = question)) +
-  geom_point(alpha = 0.7, position = position_jitter(width = 0.12, height = 0)) +
-  scale_x_continuous(breaks = sort(unique(unlist(survey_data[cols])))) +
-  labs(x = "Response value", y = "delta", color = "Column") +
-  theme_minimal()
+}
 
